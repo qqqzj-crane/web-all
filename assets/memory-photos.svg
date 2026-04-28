@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 380" role="img" aria-label="photo wall material">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#52f0ff"/><stop offset=".6" stop-color="#8e6bff"/><stop offset="1" stop-color="#ff4fd8"/></linearGradient></defs>
+  <rect width="640" height="380" rx="28" fill="#071326"/>
+  <g fill="none" stroke="#52f0ff" stroke-opacity=".22"><path d="M0 76h640M0 152h640M0 228h640M0 304h640M128 0v380M256 0v380M384 0v380M512 0v380"/></g>
+  <rect x="76" y="68" width="190" height="126" rx="18" fill="url(#g)" opacity=".38"/>
+  <rect x="304" y="110" width="246" height="166" rx="18" fill="url(#g)" opacity=".26"/>
+  <circle cx="170" cy="132" r="38" fill="#eaf7ff" opacity=".82"/>
+  <path d="M318 246 410 166l64 54 42-34 36 60Z" fill="#eaf7ff" opacity=".52"/>
+</svg>

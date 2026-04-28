@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>4ever</title>
+    <meta name="description" content="4ever 是四个朋友的主页，集合成员信息、相册和项目入口。" />
+    <meta name="theme-color" content="#f7fbff" />
+    <link rel="stylesheet" href="styles.css?v=complete-20260428" />
+    <script defer src="app.js?v=names-20260428"></script>
+  </head>
+  <body>
+    <canvas class="ambient-canvas" id="ambient-canvas" aria-hidden="true"></canvas>
+    <div class="page-glow" aria-hidden="true"></div>
+
+    <div class="site-shell">
+      <header class="topbar">
+        <a class="brand" href="#home" aria-label="回到首页">
+          <span class="brand-mark" aria-hidden="true">4</span>
+          <span class="brand-copy">
+            <strong>4ever</strong>
+            <small>四人主页</small>
+          </span>
+        </a>
+
+        <nav class="nav-links" aria-label="主导航">
+          <a href="#crew">成员</a>
+          <a href="#memory">相册</a>
+          <a href="#collab">共建</a>
+        </nav>
+
+        <div class="topbar-actions">
+          <button class="icon-button" id="copy-site" type="button" title="复制网站链接" aria-label="复制网站链接">
+            <span aria-hidden="true">↗</span>
+          </button>
+          <button class="icon-button" id="motion-toggle" type="button" aria-pressed="true" title="切换背景动效" aria-label="切换背景动效">
+            <span aria-hidden="true">✦</span>
+          </button>
+        </div>
+      </header>
+
+      <main id="home">
+        <section class="hero" aria-labelledby="page-title">
+          <div class="hero-copy">
+            <div class="signal-strip" aria-label="站点状态">
+              <span>已发布</span>
+              <span>4 人</span>
+              <span>共建中</span>
+              <span id="local-clock">--:--</span>
+            </div>
+            <p class="eyebrow">四人主页</p>
+            <h1 id="page-title">4ever</h1>
+            <p class="hero-lede">
+              一个给四个人共用的主页。这里集中放成员信息、相册和项目入口。
+            </p>
+            <div class="hero-actions" aria-label="快速操作">
+              <a class="primary-link" href="#crew"><span aria-hidden="true">01</span> 成员信息</a>
+              <a class="ghost-link" href="#memory"><span aria-hidden="true">02</span> 相册</a>
+            </div>
+            <dl class="hero-facts" aria-label="主页信息">
+              <div>
+                <dt>成员</dt>
+                <dd>4 人</dd>
+              </div>
+              <div>
+                <dt>仓库</dt>
+                <dd>qqqzj-crane/web-all</dd>
+              </div>
+              <div>
+                <dt>发布</dt>
+                <dd>GitHub Pages</dd>
+              </div>
+            </dl>
+          </div>
+
+          <aside class="feature-panel" aria-label="站点概览">
+            <img class="feature-art" src="assets/youth-hero.svg" alt="" />
+            <div class="panel-caption">
+              <span>站点身份</span>
+              <strong>4ever 是四个人共用的主页，发布在 GitHub Pages。</strong>
+            </div>
+            <dl class="system-metrics">
+              <div>
+                <dt>成员</dt>
+                <dd>4</dd>
+              </div>
+              <div>
+                <dt>状态</dt>
+                <dd>共建中</dd>
+              </div>
+              <div>
+                <dt>年份</dt>
+                <dd>2026</dd>
+              </div>
+            </dl>
+          </aside>
+        </section>
+
+        <section class="identity-section" aria-label="核心入口">
+          <a class="identity-card" href="#crew">
+            <span>01</span>
+            <strong>成员</strong>
+            <small>四个人的信息</small>
+          </a>
+          <a class="identity-card" href="#memory">
+            <span>02</span>
+            <strong>相册</strong>
+            <small>照片和截图</small>
+          </a>
+          <a class="identity-card" href="https://github.com/qqqzj-crane/web-all" target="_blank" rel="noreferrer">
+            <span>03</span>
+            <strong>GitHub</strong>
+            <small>代码仓库</small>
+          </a>
+        </section>
+
+        <section class="crew-section" id="crew" aria-labelledby="crew-title">
+          <div class="section-heading">
+            <p class="eyebrow">成员</p>
+            <h2 id="crew-title">成员信息</h2>
+          </div>
+          <div class="crew-layout">
+            <aside class="member-panel" id="member-panel" aria-live="polite"></aside>
+            <div class="crew-picker">
+              <p class="switch-hint">点击卡片切换成员</p>
+              <div class="crew-grid" id="crew-grid"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="memory-section" id="memory" aria-labelledby="memory-title">
+          <div class="section-heading">
+            <p class="eyebrow">相册</p>
+            <h2 id="memory-title">照片和项目截图</h2>
+          </div>
+          <div class="memory-layout">
+            <figure class="memory-visual">
+              <img src="assets/youth-gallery.svg" alt="" />
+              <figcaption>这里先放占位素材，之后换成你们自己的照片。</figcaption>
+            </figure>
+            <div class="memory-list" id="memory-list"></div>
+          </div>
+        </section>
+
+        <section class="collab-section" id="collab" aria-labelledby="collab-title">
+          <div class="collab-copy">
+            <p class="eyebrow">共建</p>
+            <h2 id="collab-title">一起整理这个页面</h2>
+            <p>
+              每个人可以整理自己的卡片、照片或项目资料，页面内容保持简单真实。
+            </p>
+          </div>
+          <div class="collab-actions">
+            <button class="primary-link" id="copy-repo" type="button"><span aria-hidden="true">⎘</span> 复制仓库</button>
+            <a class="ghost-link" href="https://github.com/qqqzj-crane/web-all" target="_blank" rel="noreferrer">
+              <span aria-hidden="true">↗</span> GitHub
+            </a>
+          </div>
+        </section>
+      </main>
+
+      <footer class="site-footer">
+        <p>4ever. 四个人的主页。</p>
+      </footer>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>

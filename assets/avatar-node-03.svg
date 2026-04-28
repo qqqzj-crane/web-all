@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 420" role="img" aria-label="node 03 avatar">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#8e6bff"/><stop offset="1" stop-color="#ff4fd8"/></linearGradient>
+    <pattern id="p" width="30" height="30" patternUnits="userSpaceOnUse"><circle cx="3" cy="3" r="1.5" fill="#a7fbff" opacity=".24"/></pattern>
+  </defs>
+  <rect width="420" height="420" rx="44" fill="#0b0b22"/>
+  <rect width="420" height="420" rx="44" fill="url(#p)"/>
+  <path d="M210 70c72 0 132 58 132 130 0 106-132 150-132 150S78 306 78 200C78 128 138 70 210 70Z" fill="url(#g)" opacity=".3"/>
+  <path d="M118 260c58-40 126-40 184 0" fill="none" stroke="#a7fbff" stroke-opacity=".5" stroke-width="8" stroke-linecap="round"/>
+  <text x="210" y="235" text-anchor="middle" fill="#eaf7ff" font-family="ui-monospace, Menlo, monospace" font-size="96" font-weight="900">03</text>
+</svg>

@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 720" role="img" aria-label="NODE-04 cyber hero visual">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#071326"/>
+      <stop offset="0.48" stop-color="#111631"/>
+      <stop offset="1" stop-color="#2b0b31"/>
+    </linearGradient>
+    <linearGradient id="beam" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#a7fbff"/>
+      <stop offset="0.52" stop-color="#8e6bff"/>
+      <stop offset="1" stop-color="#ff4fd8"/>
+    </linearGradient>
+    <radialGradient id="core" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#a7fbff" stop-opacity="0.95"/>
+      <stop offset="0.34" stop-color="#52f0ff" stop-opacity="0.38"/>
+      <stop offset="0.72" stop-color="#ff4fd8" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#05070d" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <pattern id="grid" width="36" height="36" patternUnits="userSpaceOnUse">
+      <path d="M36 0H0V36" fill="none" stroke="#52f0ff" stroke-opacity="0.18"/>
+    </pattern>
+  </defs>
+  <rect width="960" height="720" fill="url(#bg)"/>
+  <rect width="960" height="720" fill="url(#grid)"/>
+  <circle cx="480" cy="340" r="238" fill="none" stroke="#52f0ff" stroke-opacity="0.55" stroke-width="3"/>
+  <circle cx="480" cy="340" r="164" fill="none" stroke="#ff4fd8" stroke-opacity="0.42" stroke-width="2"/>
+  <circle cx="480" cy="340" r="92" fill="none" stroke="#a7fbff" stroke-opacity="0.32" stroke-width="2"/>
+  <circle cx="480" cy="340" r="260" fill="url(#core)" opacity="0.82"/>
+  <path d="M212 612 748 80" stroke="url(#beam)" stroke-width="30" stroke-linecap="round" filter="url(#glow)"/>
+  <rect x="370" y="250" width="220" height="178" rx="18" fill="#05070d" fill-opacity="0.82" stroke="#52f0ff" stroke-opacity="0.72"/>
+  <text x="480" y="352" text-anchor="middle" fill="#a7fbff" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="56" font-weight="900">04</text>
+  <path d="M120 154H54V88M840 154h66V88M120 558H54v66M840 558h66v66" fill="none" stroke="#ff4fd8" stroke-opacity="0.56" stroke-width="4"/>
+</svg>
