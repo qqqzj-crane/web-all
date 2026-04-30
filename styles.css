@@ -490,21 +490,6 @@ textarea:focus {
   font-size: 14px;
 }
 
-.tag-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 7px;
-}
-
-.tag-row span {
-  border-radius: 8px;
-  padding: 5px 8px;
-  background: rgba(37, 99, 235, 0.1);
-  color: var(--ink);
-  font-size: 12px;
-  font-weight: 850;
-}
-
 .empty-state {
   border: 1px dashed var(--line);
   border-radius: 8px;

@@ -35,7 +35,6 @@ const dialogMedia = document.querySelector("#dialog-media");
 const dialogType = document.querySelector("#dialog-type");
 const dialogTitle = document.querySelector("#dialog-title");
 const dialogCaption = document.querySelector("#dialog-caption");
-const dialogTags = document.querySelector("#dialog-tags");
 const downloadLink = document.querySelector("#download-link");
 const deleteButton = document.querySelector("#delete-button");
 
@@ -166,8 +165,6 @@ async function handleUpload(event) {
 }
 
 function buildUploadJobs(form, type) {
-  const title = stringField(form, "title");
-
   if (type === "photo") {
     const originals = filesOf(form, "photo_original");
     const posters = filesOf(form, "photo_poster");
@@ -175,7 +172,8 @@ function buildUploadJobs(form, type) {
     return originals.map((original, index) => ({
       original,
       poster: posters[index] || null,
-      title: inferTitle(title, original, originals.length, index),
+      title: stripExtension(original.name),
+      dateSource: original,
       displayName: original.name,
     }));
   }
@@ -197,7 +195,8 @@ function buildUploadJobs(form, type) {
       still,
       motion: motions[index],
       poster: posters[index] || null,
-      title: inferTitle(title, still, stills.length, index),
+      title: stripExtension(still.name),
+      dateSource: still,
       displayName: `${still.name} + ${motions[index].name}`,
     }));
   }
@@ -217,7 +216,8 @@ function buildUploadJobs(form, type) {
       original,
       playback: playbacks[index] || original,
       poster: posters[index] || null,
-      title: inferTitle(title, original, originals.length, index),
+      title: stripExtension(original.name),
+      dateSource: original,
       displayName: original.name,
     }));
   }
@@ -230,9 +230,9 @@ async function buildUploadPayload(form, type, job) {
   payload.set("type", type);
   payload.set("title", job.title);
   payload.set("caption", stringField(form, "caption"));
-  payload.set("taken_at", stringField(form, "taken_at"));
+  payload.set("taken_at", await extractTakenAt(job.dateSource));
   payload.set("people", "");
-  payload.set("tags", normalizeList(stringField(form, "tags")).join(","));
+  payload.set("tags", "");
 
   if (type === "photo") {
     const original = job.original;
@@ -289,9 +289,7 @@ function filteredMedia() {
   return state.media.filter((item) => {
     if (state.filterType !== "all" && item.type !== state.filterType) return false;
     if (!state.search) return true;
-    const haystack = [item.title, item.caption, ...(item.people || []), ...(item.tags || [])]
-      .join(" ")
-      .toLowerCase();
+    const haystack = [item.caption, item.taken_at].join(" ").toLowerCase();
     return haystack.includes(state.search);
   });
 }
@@ -304,7 +302,7 @@ function renderMediaCard(item) {
   const button = document.createElement("button");
   button.type = "button";
   button.className = "media-open";
-  button.setAttribute("aria-label", `打开 ${item.title}`);
+  button.setAttribute("aria-label", `打开 ${item.caption || item.title || "媒体"}`);
   button.addEventListener("click", () => openMedia(item));
 
   const poster = document.createElement("img");
@@ -344,14 +342,8 @@ function renderMediaCard(item) {
 
   const copy = document.createElement("div");
   copy.className = "media-copy";
-  copy.innerHTML = `
-    <h3>${escapeHtml(item.title || "未命名")}</h3>
-    <p>${escapeHtml(item.caption || formatDate(item.taken_at) || "没有说明")}</p>
-    <div class="tag-row">
-      ${(item.people || []).map((person) => `<span>${escapeHtml(person)}</span>`).join("")}
-      ${(item.tags || []).slice(0, 3).map((tag) => `<span>${escapeHtml(tag)}</span>`).join("")}
-    </div>
-  `;
+  copy.hidden = !item.caption;
+  copy.innerHTML = item.caption ? `<p>${escapeHtml(item.caption)}</p>` : "";
 
   card.append(button, copy);
   return card;
@@ -361,12 +353,9 @@ function openMedia(item) {
   state.activeMedia = item;
   dialogMedia.replaceChildren();
   dialogType.textContent = typeLabel(item.type);
-  dialogTitle.textContent = item.title || "未命名";
-  dialogCaption.textContent = item.caption || formatDate(item.taken_at) || "";
-  dialogTags.replaceChildren(
-    ...(item.people || []).map(makeTag),
-    ...(item.tags || []).map(makeTag),
-  );
+  dialogTitle.hidden = !item.caption;
+  dialogTitle.textContent = item.caption || "";
+  dialogCaption.textContent = "";
 
   if (item.type === "video") {
     const video = document.createElement("video");
@@ -548,6 +537,93 @@ function pausePreview(video) {
   video.currentTime = 0;
 }
 
+async function extractTakenAt(file) {
+  if (!file) return "";
+  const exifDate = await readJpegExifDate(file).catch(() => "");
+  if (exifDate) return exifDate;
+  if (file.lastModified) return new Date(file.lastModified).toISOString().slice(0, 10);
+  return "";
+}
+
+async function readJpegExifDate(file) {
+  const name = file.name.toLowerCase();
+  const isJpeg = file.type === "image/jpeg" || name.endsWith(".jpg") || name.endsWith(".jpeg");
+  if (!isJpeg) return "";
+
+  const buffer = await file.slice(0, 256 * 1024).arrayBuffer();
+  const view = new DataView(buffer);
+  if (view.byteLength < 4 || view.getUint16(0) !== 0xffd8) return "";
+
+  let offset = 2;
+  while (offset + 4 < view.byteLength) {
+    if (view.getUint8(offset) !== 0xff) break;
+    const marker = view.getUint8(offset + 1);
+    const length = view.getUint16(offset + 2);
+    if (marker === 0xe1 && readAscii(view, offset + 4, 6) === "Exif\0\0") {
+      return readTiffDate(view, offset + 10, length - 8);
+    }
+    offset += 2 + length;
+  }
+  return "";
+}
+
+function readTiffDate(view, tiffStart, tiffLength) {
+  if (tiffStart + tiffLength > view.byteLength || tiffLength < 12) return "";
+  const endian = readAscii(view, tiffStart, 2);
+  const littleEndian = endian === "II";
+  if (!littleEndian && endian !== "MM") return "";
+  if (view.getUint16(tiffStart + 2, littleEndian) !== 42) return "";
+
+  const firstIfdOffset = view.getUint32(tiffStart + 4, littleEndian);
+  const ifd0 = readIfd(view, tiffStart, firstIfdOffset, littleEndian);
+  const exifIfdOffset = ifd0.pointers.get(0x8769);
+  const exifIfd = exifIfdOffset ? readIfd(view, tiffStart, exifIfdOffset, littleEndian) : { values: new Map() };
+  return (
+    normalizeExifDate(exifIfd.values.get(0x9003)) ||
+    normalizeExifDate(exifIfd.values.get(0x9004)) ||
+    normalizeExifDate(ifd0.values.get(0x0132))
+  );
+}
+
+function readIfd(view, tiffStart, ifdOffset, littleEndian) {
+  const values = new Map();
+  const pointers = new Map();
+  const start = tiffStart + ifdOffset;
+  if (start + 2 > view.byteLength) return { values, pointers };
+  const count = view.getUint16(start, littleEndian);
+
+  for (let index = 0; index < count; index += 1) {
+    const entry = start + 2 + index * 12;
+    if (entry + 12 > view.byteLength) break;
+    const tag = view.getUint16(entry, littleEndian);
+    const type = view.getUint16(entry + 2, littleEndian);
+    const size = view.getUint32(entry + 4, littleEndian);
+    const valueOffset = view.getUint32(entry + 8, littleEndian);
+
+    if (type === 2) {
+      const textStart = size <= 4 ? entry + 8 : tiffStart + valueOffset;
+      values.set(tag, readAscii(view, textStart, size).replace(/\0+$/, ""));
+    } else if (tag === 0x8769) {
+      pointers.set(tag, valueOffset);
+    }
+  }
+
+  return { values, pointers };
+}
+
+function normalizeExifDate(value) {
+  const match = /^(\d{4}):(\d{2}):(\d{2})/.exec(value || "");
+  return match ? `${match[1]}-${match[2]}-${match[3]}` : "";
+}
+
+function readAscii(view, start, length) {
+  let text = "";
+  for (let index = 0; index < length && start + index < view.byteLength; index += 1) {
+    text += String.fromCharCode(view.getUint8(start + index));
+  }
+  return text;
+}
+
 function filesOf(form, name) {
   return form.getAll(name).filter((file) => file instanceof File && file.size > 0);
 }
@@ -558,21 +634,8 @@ function sortFiles(files) {
   );
 }
 
-function inferTitle(title, file, count, index) {
-  if (title && count === 1) return title;
-  if (title) return `${title} ${index + 1}`;
-  return stripExtension(file.name);
-}
-
 function stringField(form, name) {
   return String(form.get(name) || "").trim();
-}
-
-function normalizeList(value) {
-  return value
-    .split(/[,，]/)
-    .map((item) => item.trim())
-    .filter(Boolean);
 }
 
 function mediaUrl(id, variant, download = false) {
@@ -586,12 +649,6 @@ function typeLabel(type) {
 function formatDate(value) {
   if (!value) return "";
   return new Intl.DateTimeFormat("zh-CN", { dateStyle: "medium" }).format(new Date(value));
-}
-
-function makeTag(value) {
-  const tag = document.createElement("span");
-  tag.textContent = value;
-  return tag;
 }
 
 function stripExtension(name) {

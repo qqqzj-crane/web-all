@@ -62,7 +62,7 @@
             </div>
             <label class="search-field">
               <span>搜索</span>
-              <input id="search-input" type="search" placeholder="标题、人物、标签" />
+              <input id="search-input" type="search" placeholder="说点什么、日期" />
             </label>
             <button class="primary-button upload-shortcut" id="open-upload-button" type="button">上传</button>
           </section>
@@ -88,24 +88,9 @@
               </div>
             </fieldset>
 
-            <div class="form-grid">
-              <label>
-                标题
-                <input name="title" type="text" placeholder="留空时使用文件名；批量时会自动编号" />
-              </label>
-              <label>
-                拍摄日期
-                <input name="taken_at" type="date" />
-              </label>
-              <label>
-                标签
-                <input name="tags" type="text" placeholder="旅行, 聚餐, 复习周" />
-              </label>
-            </div>
-
             <label>
-              说明
-              <textarea name="caption" rows="3" placeholder="给这张照片或视频留一句话"></textarea>
+              说点什么
+              <textarea name="caption" rows="3" placeholder="可选，不写就留空"></textarea>
             </label>
 
             <div class="file-groups">
@@ -152,7 +137,7 @@
             </div>
 
             <p class="form-note">
-              可以多选文件批量上传。每个媒体会单独请求，单个媒体建议控制在 95MB 以内。
+              可以多选文件批量上传。日期会优先从照片元数据读取，读不到时使用文件日期。
             </p>
             <p class="upload-progress" id="upload-progress" role="status" aria-live="polite"></p>
 
@@ -172,7 +157,6 @@
         <p class="eyebrow" id="dialog-type"></p>
         <h3 id="dialog-title"></h3>
         <p id="dialog-caption"></p>
-        <div class="tag-row" id="dialog-tags"></div>
         <div class="dialog-actions">
           <a class="ghost-button" id="download-link" href="#" download>下载原件</a>
           <button class="danger-button" id="delete-button" type="button">删除</button>
