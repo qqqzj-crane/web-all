@@ -1,4 +1,4 @@
-# 4ever Album
+# Album
 
 `album.qqqzj.cn` 的四人私密媒体相册。站点使用 Cloudflare Pages + Pages Functions 部署，R2 保存照片/实况/短视频文件，D1 保存媒体元数据。
 
