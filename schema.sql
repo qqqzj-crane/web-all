@@ -1,0 +1,40 @@
+CREATE TABLE IF NOT EXISTS media (
+  id TEXT PRIMARY KEY,
+  type TEXT NOT NULL CHECK (type IN ('photo', 'live', 'video')),
+  title TEXT NOT NULL DEFAULT '',
+  caption TEXT NOT NULL DEFAULT '',
+  people TEXT NOT NULL DEFAULT '[]',
+  tags TEXT NOT NULL DEFAULT '[]',
+  taken_at TEXT,
+  duration INTEGER,
+  poster_key TEXT NOT NULL,
+  poster_mime TEXT,
+  poster_name TEXT,
+  large_key TEXT,
+  large_mime TEXT,
+  large_name TEXT,
+  original_key TEXT,
+  original_mime TEXT,
+  original_name TEXT,
+  motion_key TEXT,
+  motion_mime TEXT,
+  motion_name TEXT,
+  original_still_key TEXT,
+  original_still_mime TEXT,
+  original_still_name TEXT,
+  original_motion_key TEXT,
+  original_motion_mime TEXT,
+  original_motion_name TEXT,
+  playback_video_key TEXT,
+  playback_video_mime TEXT,
+  playback_video_name TEXT,
+  original_video_key TEXT,
+  original_video_mime TEXT,
+  original_video_name TEXT,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_media_type ON media(type);
+CREATE INDEX IF NOT EXISTS idx_media_taken_at ON media(taken_at);
+CREATE INDEX IF NOT EXISTS idx_media_created_at ON media(created_at);

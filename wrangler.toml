@@ -1,0 +1,12 @@
+name = "qqqzj-album"
+compatibility_date = "2026-04-30"
+pages_build_output_dir = "."
+
+[[r2_buckets]]
+binding = "PHOTOS_BUCKET"
+bucket_name = "qqqzj-album-media"
+
+[[d1_databases]]
+binding = "ALBUM_DB"
+database_name = "qqqzj-album-db"
+database_id = "replace-with-your-d1-database-id"

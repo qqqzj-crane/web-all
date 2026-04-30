@@ -3,166 +3,211 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>4ever</title>
-    <meta name="description" content="4ever 是四个朋友的主页，集合成员信息、相册和项目入口。" />
+    <title>4ever Album</title>
+    <meta
+      name="description"
+      content="album.qqqzj.cn 是四个人共享的私密媒体相册，支持照片、实况照片和短视频。"
+    />
     <meta name="theme-color" content="#f7fbff" />
-    <link rel="stylesheet" href="styles.css?v=complete-20260428" />
-    <script defer src="app.js?v=names-20260428"></script>
+    <link rel="stylesheet" href="styles.css?v=album-20260430" />
+    <script defer src="app.js?v=album-20260430"></script>
   </head>
   <body>
-    <canvas class="ambient-canvas" id="ambient-canvas" aria-hidden="true"></canvas>
-    <div class="page-glow" aria-hidden="true"></div>
+    <div class="page-backdrop" aria-hidden="true"></div>
 
-    <div class="site-shell">
-      <header class="topbar">
-        <a class="brand" href="#home" aria-label="回到首页">
-          <span class="brand-mark" aria-hidden="true">4</span>
-          <span class="brand-copy">
-            <strong>4ever</strong>
-            <small>四人主页</small>
-          </span>
-        </a>
-
-        <nav class="nav-links" aria-label="主导航">
-          <a href="#crew">成员</a>
-          <a href="#memory">相册</a>
-          <a href="#collab">共建</a>
-        </nav>
-
-        <div class="topbar-actions">
-          <button class="icon-button" id="copy-site" type="button" title="复制网站链接" aria-label="复制网站链接">
-            <span aria-hidden="true">↗</span>
-          </button>
-          <button class="icon-button" id="motion-toggle" type="button" aria-pressed="true" title="切换背景动效" aria-label="切换背景动效">
-            <span aria-hidden="true">✦</span>
-          </button>
+    <main class="app-shell">
+      <section class="auth-view" id="auth-view" aria-labelledby="auth-title">
+        <div class="auth-panel">
+          <p class="eyebrow">album.qqqzj.cn</p>
+          <h1 id="auth-title">4ever Album</h1>
+          <p class="auth-copy">四个人的私密照片墙。登录后可以查看、上传和整理照片、实况照片与短视频。</p>
+          <form class="login-form" id="login-form">
+            <label for="password">相册密码</label>
+            <div class="password-row">
+              <input id="password" name="password" type="password" autocomplete="current-password" required />
+              <button class="primary-button" type="submit">进入</button>
+            </div>
+          </form>
         </div>
-      </header>
+      </section>
 
-      <main id="home">
-        <section class="hero" aria-labelledby="page-title">
-          <div class="hero-copy">
-            <div class="signal-strip" aria-label="站点状态">
-              <span>已发布</span>
-              <span>4 人</span>
-              <span>共建中</span>
-              <span id="local-clock">--:--</span>
-            </div>
-            <p class="eyebrow">四人主页</p>
-            <h1 id="page-title">4ever</h1>
-            <p class="hero-lede">
-              一个给四个人共用的主页。这里集中放成员信息、相册和项目入口。
-            </p>
-            <div class="hero-actions" aria-label="快速操作">
-              <a class="primary-link" href="#crew"><span aria-hidden="true">01</span> 成员信息</a>
-              <a class="ghost-link" href="#memory"><span aria-hidden="true">02</span> 相册</a>
-            </div>
-            <dl class="hero-facts" aria-label="主页信息">
-              <div>
-                <dt>成员</dt>
-                <dd>4 人</dd>
-              </div>
-              <div>
-                <dt>仓库</dt>
-                <dd>qqqzj-crane/web-all</dd>
-              </div>
-              <div>
-                <dt>发布</dt>
-                <dd>GitHub Pages</dd>
-              </div>
-            </dl>
-          </div>
-
-          <aside class="feature-panel" aria-label="站点概览">
-            <img class="feature-art" src="assets/youth-hero.svg" alt="" />
-            <div class="panel-caption">
-              <span>站点身份</span>
-              <strong>4ever 是四个人共用的主页，发布在 GitHub Pages。</strong>
-            </div>
-            <dl class="system-metrics">
-              <div>
-                <dt>成员</dt>
-                <dd>4</dd>
-              </div>
-              <div>
-                <dt>状态</dt>
-                <dd>共建中</dd>
-              </div>
-              <div>
-                <dt>年份</dt>
-                <dd>2026</dd>
-              </div>
-            </dl>
-          </aside>
-        </section>
-
-        <section class="identity-section" aria-label="核心入口">
-          <a class="identity-card" href="#crew">
-            <span>01</span>
-            <strong>成员</strong>
-            <small>四个人的信息</small>
+      <section class="album-view" id="album-view" hidden>
+        <header class="topbar">
+          <a class="brand" href="#gallery" aria-label="回到照片墙">
+            <span class="brand-mark" aria-hidden="true">4</span>
+            <span>
+              <strong>4ever Album</strong>
+              <small>album.qqqzj.cn</small>
+            </span>
           </a>
-          <a class="identity-card" href="#memory">
-            <span>02</span>
-            <strong>相册</strong>
-            <small>照片和截图</small>
-          </a>
-          <a class="identity-card" href="https://github.com/qqqzj-crane/web-all" target="_blank" rel="noreferrer">
-            <span>03</span>
-            <strong>GitHub</strong>
-            <small>代码仓库</small>
-          </a>
-        </section>
+          <nav class="nav-links" aria-label="相册导航">
+            <a href="#gallery">照片墙</a>
+            <a href="#upload">上传</a>
+            <a href="#manage">管理</a>
+          </nav>
+          <button class="ghost-button" id="logout-button" type="button">退出</button>
+        </header>
 
-        <section class="crew-section" id="crew" aria-labelledby="crew-title">
-          <div class="section-heading">
-            <p class="eyebrow">成员</p>
-            <h2 id="crew-title">成员信息</h2>
-          </div>
-          <div class="crew-layout">
-            <aside class="member-panel" id="member-panel" aria-live="polite"></aside>
-            <div class="crew-picker">
-              <p class="switch-hint">点击卡片切换成员</p>
-              <div class="crew-grid" id="crew-grid"></div>
-            </div>
-          </div>
-        </section>
-
-        <section class="memory-section" id="memory" aria-labelledby="memory-title">
-          <div class="section-heading">
-            <p class="eyebrow">相册</p>
-            <h2 id="memory-title">照片和项目截图</h2>
-          </div>
-          <div class="memory-layout">
-            <figure class="memory-visual">
-              <img src="assets/youth-gallery.svg" alt="" />
-              <figcaption>这里先放占位素材，之后换成你们自己的照片。</figcaption>
-            </figure>
-            <div class="memory-list" id="memory-list"></div>
-          </div>
-        </section>
-
-        <section class="collab-section" id="collab" aria-labelledby="collab-title">
-          <div class="collab-copy">
-            <p class="eyebrow">共建</p>
-            <h2 id="collab-title">一起整理这个页面</h2>
+        <section class="hero" id="gallery" aria-labelledby="gallery-title">
+          <div>
+            <p class="eyebrow">private media wall</p>
+            <h2 id="gallery-title">照片、实况和短视频</h2>
             <p>
-              每个人可以整理自己的卡片、照片或项目资料，页面内容保持简单真实。
+              这里默认只加载封面图。实况照片在桌面悬停、手机按住时播放；视频点开详情后播放网页版本。
             </p>
           </div>
-          <div class="collab-actions">
-            <button class="primary-link" id="copy-repo" type="button"><span aria-hidden="true">⎘</span> 复制仓库</button>
-            <a class="ghost-link" href="https://github.com/qqqzj-crane/web-all" target="_blank" rel="noreferrer">
-              <span aria-hidden="true">↗</span> GitHub
-            </a>
+          <div class="hero-stats" aria-label="相册统计">
+            <div>
+              <span id="count-all">0</span>
+              <small>全部</small>
+            </div>
+            <div>
+              <span id="count-live">0</span>
+              <small>实况</small>
+            </div>
+            <div>
+              <span id="count-video">0</span>
+              <small>视频</small>
+            </div>
           </div>
         </section>
-      </main>
 
-      <footer class="site-footer">
-        <p>4ever. 四个人的主页。</p>
-      </footer>
-    </div>
+        <section class="toolbar" aria-label="筛选媒体">
+          <div class="segmented-control" id="type-filter" role="group" aria-label="媒体类型">
+            <button type="button" data-type="all" aria-pressed="true">全部</button>
+            <button type="button" data-type="photo">照片</button>
+            <button type="button" data-type="live">实况</button>
+            <button type="button" data-type="video">视频</button>
+          </div>
+          <label class="search-field">
+            <span>搜索</span>
+            <input id="search-input" type="search" placeholder="标题、人物、标签" />
+          </label>
+        </section>
+
+        <section class="gallery-grid" id="gallery-grid" aria-live="polite"></section>
+        <p class="empty-state" id="empty-state" hidden>还没有媒体。先去上传几张照片吧。</p>
+
+        <section class="upload-section" id="upload" aria-labelledby="upload-title">
+          <div class="section-heading">
+            <p class="eyebrow">upload</p>
+            <h2 id="upload-title">上传媒体</h2>
+          </div>
+
+          <form class="upload-form" id="upload-form">
+            <fieldset>
+              <legend>类型</legend>
+              <div class="segmented-control" id="upload-type" role="group" aria-label="上传类型">
+                <button type="button" data-upload-type="photo" aria-pressed="true">普通照片</button>
+                <button type="button" data-upload-type="live">实况照片</button>
+                <button type="button" data-upload-type="video">短视频</button>
+              </div>
+            </fieldset>
+
+            <div class="form-grid">
+              <label>
+                标题
+                <input name="title" type="text" placeholder="例如：春游合照" required />
+              </label>
+              <label>
+                拍摄日期
+                <input name="taken_at" type="date" />
+              </label>
+              <label>
+                人物
+                <input name="people" type="text" placeholder="用逗号分隔：qqqzj, l_l" />
+              </label>
+              <label>
+                标签
+                <input name="tags" type="text" placeholder="旅行, 聚餐, 复习周" />
+              </label>
+            </div>
+
+            <label>
+              说明
+              <textarea name="caption" rows="3" placeholder="给这张照片或视频留一句话"></textarea>
+            </label>
+
+            <div class="file-groups">
+              <div class="file-group" data-file-group="photo">
+                <label>
+                  原始照片
+                  <input name="photo_original" type="file" accept="image/*,.heic,.heif" />
+                </label>
+                <label>
+                  网页封面（可选）
+                  <input name="photo_poster" type="file" accept="image/*" />
+                </label>
+              </div>
+
+              <div class="file-group" data-file-group="live" hidden>
+                <label>
+                  实况静态原件
+                  <input name="live_still" type="file" accept="image/*,.heic,.heif" />
+                </label>
+                <label>
+                  实况动态原件
+                  <input name="live_motion" type="file" accept="video/*,.mov,.mp4" />
+                </label>
+                <label>
+                  网页封面（可选）
+                  <input name="live_poster" type="file" accept="image/*" />
+                </label>
+              </div>
+
+              <div class="file-group" data-file-group="video" hidden>
+                <label>
+                  视频原件
+                  <input name="video_original" type="file" accept="video/*,.mov,.mp4,.m4v" />
+                </label>
+                <label>
+                  网页播放版 MP4（可选）
+                  <input name="video_playback" type="file" accept="video/mp4,.mp4" />
+                </label>
+                <label>
+                  视频封面（可选）
+                  <input name="video_poster" type="file" accept="image/*" />
+                </label>
+              </div>
+            </div>
+
+            <p class="form-note">
+              单次请求建议控制在 95MB 以内。视频 v1 适合少量短视频；较大的视频以后可升级为直传或 Stream。
+            </p>
+
+            <div class="form-actions">
+              <button class="primary-button" id="upload-button" type="submit">上传</button>
+              <button class="ghost-button" type="reset">清空</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="manage-section" id="manage" aria-labelledby="manage-title">
+          <div class="section-heading">
+            <p class="eyebrow">manage</p>
+            <h2 id="manage-title">管理说明</h2>
+          </div>
+          <p>
+            当前版本支持在详情页删除媒体。修改标题、人物和标签的接口已经预留，可在下一步加成行内编辑。
+          </p>
+        </section>
+      </section>
+    </main>
+
+    <dialog class="media-dialog" id="media-dialog">
+      <button class="dialog-close" id="dialog-close" type="button" aria-label="关闭">×</button>
+      <div class="dialog-media" id="dialog-media"></div>
+      <div class="dialog-copy">
+        <p class="eyebrow" id="dialog-type"></p>
+        <h3 id="dialog-title"></h3>
+        <p id="dialog-caption"></p>
+        <div class="tag-row" id="dialog-tags"></div>
+        <div class="dialog-actions">
+          <a class="ghost-button" id="download-link" href="#" download>下载原件</a>
+          <button class="danger-button" id="delete-button" type="button">删除</button>
+        </div>
+      </div>
+    </dialog>
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
   </body>

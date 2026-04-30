@@ -1,24 +1,82 @@
-# 四人主页
+# 4ever Album
 
-一个独立静态主页，内容集中在四个人的信息、相册和项目入口。没有使用官方游戏图片或改动相邻的 `blog` 项目。
+`album.qqqzj.cn` 的四人私密媒体相册。站点使用 Cloudflare Pages + Pages Functions 部署，R2 保存照片/实况/短视频文件，D1 保存媒体元数据。
 
-线上地址：
+## 功能
 
-https://qqqzj-crane.github.io/web-all/
+- 共享密码登录
+- 普通照片、实况照片、短视频混排照片墙
+- 实况照片静态显示，悬停或按住播放
+- 短视频保留原件，同时使用网页播放版播放
+- R2 私有 bucket 存储，所有媒体通过登录后的 API 读取
 
-## 打开
+## Cloudflare 资源
 
-直接用浏览器打开 `index.html` 即可。
+需要准备：
 
-## 修改四个人信息
+- Pages project: `qqqzj-album`
+- Custom domain: `album.qqqzj.cn`
+- R2 bucket: `qqqzj-album-media`
+- D1 database: `qqqzj-album-db`
+- Secrets:
+  - `ALBUM_PASSWORD_HASH`
+  - `SESSION_SECRET`
 
-编辑 `app.js` 开头的 `crew` 数组：
+## 初始化
 
-- `name`: 名字
-- `role`: 角色称号
-- `mark`: 头像圆章里的字
-- `quote`: 简介
-- `tags`: 标签
-- `link`: 个人链接
+生成密码哈希和会话密钥：
 
-`memories` 控制相册和项目入口内容。
+```bash
+node scripts/hash-password.mjs "你的相册密码"
+```
+
+创建 R2 和 D1：
+
+```bash
+wrangler r2 bucket create qqqzj-album-media
+wrangler d1 create qqqzj-album-db
+```
+
+把 `wrangler d1 create` 返回的 `database_id` 填进 `wrangler.toml`，然后初始化远端数据库表：
+
+```bash
+wrangler d1 execute qqqzj-album-db --remote --file=schema.sql
+```
+
+设置密钥：
+
+```bash
+wrangler pages secret put ALBUM_PASSWORD_HASH --project-name qqqzj-album
+wrangler pages secret put SESSION_SECRET --project-name qqqzj-album
+```
+
+## 本地预览
+
+需要 Wrangler 才能预览 Functions、R2 和 D1 绑定：
+
+```bash
+wrangler pages dev . --local
+```
+
+如果只直接打开 `index.html`，只能看到前端外壳，登录和上传接口不会工作。
+
+## 部署
+
+```bash
+wrangler pages deploy . --project-name qqqzj-album
+```
+
+部署后在 Cloudflare Pages 项目的 Custom domains 中添加：
+
+```text
+album.qqqzj.cn
+```
+
+如果 `qqqzj.cn` 已托管在 Cloudflare，确认 DNS 中有 `album` 的 CNAME 指向 Pages 项目；如果域名 DNS 不在 Cloudflare，需要在当前 DNS 服务商添加 Cloudflare Pages 提示的 CNAME。
+
+## 上传约定
+
+- 普通照片：上传一张原始照片，前端会生成网页大图和封面；如果原件是浏览器读不了的 HEIC/HEIF，可以额外上传 JPG/PNG/WebP 封面。
+- 实况照片：上传静态原件和动态原件，系统保存原件，并用静态图或额外封面生成网页封面。
+- 短视频：上传视频原件；如果原件不是网页友好的 MP4/H.264/AAC，建议额外上传网页播放版 MP4。
+- 单次请求建议小于 95MB。更大的视频以后应升级为 direct upload 或 Cloudflare Stream。

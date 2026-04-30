@@ -1,253 +1,505 @@
-const SITE_URL = "https://qqqzj-crane.github.io/web-all/";
-const REPO_URL = "https://github.com/qqqzj-crane/web-all";
+const MAX_CLIENT_UPLOAD_BYTES = 95 * 1024 * 1024;
+const IMAGE_LARGE_EDGE = 1800;
+const IMAGE_POSTER_EDGE = 760;
 
-const crew = [
-  {
-    name: "qqqzj",
-    handle: "主页成员",
-    role: "成员 01",
-    mark: "01",
-    accent: "rgba(65, 145, 255, 0.45)",
-    headline: "放个人简介、照片和项目入口。",
-    quote: "这里放 qqqzj 的成员信息。",
-    bio: "我是 qqqzj。这个页面是四个人一起用的主页。",
-    focus: "主页信息、照片、项目",
-    status: "个人信息",
-    now: "这里放 qqqzj 的个人信息。",
-    favorite: "项目入口、照片、资料整理",
-    signal: 100,
-    image: "assets/member-me.jpg",
-    tags: ["qqqzj", "成员", "项目"],
-    link: "#memory",
-    action: "看相册",
-    facts: [
-      ["成员", "qqqzj"],
-      ["仓库", "qqqzj-crane/web-all"],
-      ["内容", "个人信息"],
-    ],
-  },
-  {
-    name: "l_l",
-    handle: "日常和整理",
-    role: "成员 02",
-    mark: "02",
-    accent: "rgba(93, 201, 163, 0.5)",
-    headline: "放日常碎片、活动说明和照片备注。",
-    quote: "这里可以放真实经历、短句和照片说明。",
-    bio: "这里可以放短记录、活动说明、照片备注，或者想保留的小片段。",
-    focus: "日常碎片、短文、照片说明",
-    status: "个人信息",
-    now: "这里放 l_l 的个人信息和日常碎片。",
-    favorite: "活动记录、照片说明、短文",
-    signal: 89,
-    image: "assets/member-friend-c.jpg",
-    tags: ["日常", "照片", "说明"],
-    link: "#memory",
-    action: "看相册",
-    facts: [
-      ["内容", "日常、照片备注"],
-      ["可以放", "活动记录、短文"],
-      ["类型", "成员信息"],
-    ],
-  },
-  {
-    name: "zzz",
-    handle: "照片和素材",
-    role: "负责照片",
-    mark: "03",
-    accent: "rgba(255, 116, 128, 0.45)",
-    headline: "整理合照、活动图和封面图。",
-    quote: "负责挑选照片和素材，后面可以把占位图换成真实图片。",
-    bio: "这里可以放个人简介、喜欢的照片风格，或者相册分类。",
-    focus: "照片、封面、配色",
-    status: "个人信息",
-    now: "负责相册内容和封面素材。",
-    favorite: "合照、活动照、封面图",
-    signal: 90,
-    image: "assets/member-friend-a.jpg",
-    tags: ["照片", "相册", "素材"],
-    link: "#memory",
-    action: "看相册",
-    facts: [
-      ["负责", "照片墙、封面图"],
-      ["可以补", "合照、旅行照、活动照"],
-      ["类型", "成员信息"],
-    ],
-  },
-  {
-    name: "Trae",
-    handle: "项目和资料",
-    role: "成员 04",
-    mark: "04",
-    accent: "rgba(255, 191, 71, 0.5)",
-    headline: "放课程项目、资料链接和作品入口。",
-    quote: "负责整理项目入口、常用资料和后续要补的内容。",
-    bio: "这里可以放项目说明、仓库链接、展示视频，或者几条常用资料入口。",
-    focus: "资料入口、项目列表、作品",
-    status: "个人信息",
-    now: "负责项目入口和资料链接。",
-    favorite: "项目截图、文档链接、展示入口",
-    signal: 93,
-    image: "assets/member-friend-b.jpg",
-    tags: ["项目", "资料", "作品"],
-    link: "#collab",
-    action: "看共建",
-    facts: [
-      ["负责", "项目入口、资料整理"],
-      ["可以补", "项目链接、截图、说明"],
-      ["类型", "成员信息"],
-    ],
-  },
-];
+const state = {
+  media: [],
+  filterType: "all",
+  search: "",
+  uploadType: "photo",
+  activeMedia: null,
+};
 
-const memories = [
-  {
-    label: "照片",
-    title: "照片墙",
-    text: "放合照、旅行照、活动照。每组照片配一句简单说明就够。",
-    image: "assets/youth-memory-photos.svg",
-  },
-  {
-    label: "项目",
-    title: "项目与作品",
-    text: "放课程项目、小工具或展示链接。每个项目保留标题、截图和链接。",
-    image: "assets/youth-memory-project.svg",
-  },
-  {
-    label: "记录",
-    title: "日常记录",
-    text: "放聚餐、活动、复习周、游戏截图等内容，简单记录就好。",
-    image: "assets/youth-memory-daily.svg",
-  },
-];
-
-const crewGrid = document.querySelector("#crew-grid");
-const memberPanel = document.querySelector("#member-panel");
-const memoryList = document.querySelector("#memory-list");
-const motionToggle = document.querySelector("#motion-toggle");
-const localClock = document.querySelector("#local-clock");
+const authView = document.querySelector("#auth-view");
+const albumView = document.querySelector("#album-view");
+const loginForm = document.querySelector("#login-form");
+const logoutButton = document.querySelector("#logout-button");
+const galleryGrid = document.querySelector("#gallery-grid");
+const emptyState = document.querySelector("#empty-state");
+const typeFilter = document.querySelector("#type-filter");
+const searchInput = document.querySelector("#search-input");
+const uploadType = document.querySelector("#upload-type");
+const uploadForm = document.querySelector("#upload-form");
+const uploadButton = document.querySelector("#upload-button");
 const toast = document.querySelector("#toast");
-const canvas = document.querySelector("#ambient-canvas");
-const context = canvas.getContext("2d");
+const mediaDialog = document.querySelector("#media-dialog");
+const dialogClose = document.querySelector("#dialog-close");
+const dialogMedia = document.querySelector("#dialog-media");
+const dialogType = document.querySelector("#dialog-type");
+const dialogTitle = document.querySelector("#dialog-title");
+const dialogCaption = document.querySelector("#dialog-caption");
+const dialogTags = document.querySelector("#dialog-tags");
+const downloadLink = document.querySelector("#download-link");
+const deleteButton = document.querySelector("#delete-button");
 
-let activeMember = 0;
-let motionEnabled = true;
-let width = 0;
-let height = 0;
-let deviceScale = 1;
-let motes = [];
-let ribbons = [];
-let lastFrame = 0;
+init();
 
-function renderCrew() {
-  crewGrid.replaceChildren(
-    ...crew
-      .map((friend, index) => ({ friend, index }))
-      .filter(({ index }) => index !== activeMember)
-      .map(({ friend, index }) => {
-        const card = document.createElement("button");
-        card.className = "friend-card";
-        card.type = "button";
-        card.style.setProperty("--accent", friend.accent);
-        card.setAttribute("aria-label", `查看 ${friend.name}`);
-        card.innerHTML = `
-          <span class="friend-avatar" aria-hidden="true">
-            <img src="${friend.image}" alt="" />
-          </span>
-          <span class="role">${escapeHtml(friend.role)}</span>
-          <strong>${escapeHtml(friend.name)}</strong>
-          <small>${escapeHtml(friend.headline)}</small>
-          <span class="signal-bar" aria-label="完成度 ${friend.signal}%">
-            <i style="--signal: ${friend.signal}%"></i>
-          </span>
-        `;
-        card.addEventListener("click", () => setActiveMember(index));
-        return card;
-      }),
-  );
-}
-
-function renderMemberPanel() {
-  const friend = crew[activeMember];
-  const isExternalLink = /^https?:/.test(friend.link);
-  const linkAttributes = isExternalLink ? ' target="_blank" rel="noreferrer"' : "";
-  memberPanel.style.setProperty("--accent", friend.accent);
-  memberPanel.innerHTML = `
-    <div class="member-panel-top">
-      <span class="friend-avatar" aria-hidden="true">
-        <img src="${friend.image}" alt="" />
-      </span>
-      <div>
-        <p class="eyebrow">${escapeHtml(friend.status)}</p>
-        <h3>${escapeHtml(friend.name)}</h3>
-        <span>${escapeHtml(friend.handle)}</span>
-      </div>
-    </div>
-    <p>${escapeHtml(friend.quote)}</p>
-    <p class="member-bio">${escapeHtml(friend.bio)}</p>
-    <dl class="member-facts">
-      ${friend.facts
-        .map(
-          ([term, detail]) => `
-            <div>
-              <dt>${escapeHtml(term)}</dt>
-              <dd>${escapeHtml(detail)}</dd>
-            </div>
-          `,
-        )
-        .join("")}
-    </dl>
-    <div class="member-now">
-      <span>当前</span>
-      <p>${escapeHtml(friend.now)}</p>
-    </div>
-    <div class="member-now">
-      <span>可以补充</span>
-      <p>${escapeHtml(friend.favorite)}</p>
-    </div>
-    <div class="stats">${friend.tags.map((tag) => `<span>${escapeHtml(tag)}</span>`).join("")}</div>
-    <a class="card-link" href="${friend.link}"${linkAttributes}>${escapeHtml(friend.action)}</a>
-  `;
-}
-
-function setActiveMember(index) {
-  activeMember = index;
-  renderCrew();
-  renderMemberPanel();
-}
-
-function renderMemories() {
-  memoryList.replaceChildren(
-    ...memories.map((item) => {
-      const entry = document.createElement("article");
-      entry.className = "memory-item";
-      entry.innerHTML = `
-        <img class="memory-thumb" src="${item.image}" alt="" />
-        <span>${escapeHtml(item.label)}</span>
-        <h3>${escapeHtml(item.title)}</h3>
-        <p>${escapeHtml(item.text)}</p>
-      `;
-      return entry;
-    }),
-  );
-}
-
-function updateClock() {
-  const formatter = new Intl.DateTimeFormat("zh-CN", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  });
-  localClock.textContent = formatter.format(new Date());
-}
-
-async function copyText(value, label) {
+async function init() {
+  bindEvents();
   try {
-    await navigator.clipboard.writeText(value);
-    showToast(`${label} 已复制`);
+    const session = await api("/api/session");
+    if (session.authenticated) {
+      showAlbum();
+      await refreshMedia();
+    } else {
+      showAuth();
+    }
   } catch {
-    showToast(value);
+    showAuth();
   }
+}
+
+function bindEvents() {
+  loginForm.addEventListener("submit", handleLogin);
+  logoutButton.addEventListener("click", handleLogout);
+  typeFilter.addEventListener("click", handleTypeFilter);
+  searchInput.addEventListener("input", () => {
+    state.search = searchInput.value.trim().toLowerCase();
+    renderGallery();
+  });
+  uploadType.addEventListener("click", handleUploadType);
+  uploadForm.addEventListener("submit", handleUpload);
+  uploadForm.addEventListener("reset", () => {
+    window.setTimeout(() => setUploadType("photo"), 0);
+  });
+  dialogClose.addEventListener("click", () => mediaDialog.close());
+  deleteButton.addEventListener("click", handleDelete);
+  mediaDialog.addEventListener("click", (event) => {
+    if (event.target === mediaDialog) mediaDialog.close();
+  });
+}
+
+async function handleLogin(event) {
+  event.preventDefault();
+  const password = new FormData(loginForm).get("password");
+  try {
+    await api("/api/login", {
+      method: "POST",
+      body: JSON.stringify({ password }),
+      headers: { "Content-Type": "application/json" },
+    });
+    loginForm.reset();
+    showAlbum();
+    await refreshMedia();
+    showToast("已进入相册");
+  } catch (error) {
+    showToast(error.message || "密码不正确");
+  }
+}
+
+async function handleLogout() {
+  await api("/api/logout", { method: "POST" }).catch(() => {});
+  state.media = [];
+  showAuth();
+}
+
+function handleTypeFilter(event) {
+  const button = event.target.closest("button[data-type]");
+  if (!button) return;
+  state.filterType = button.dataset.type;
+  for (const item of typeFilter.querySelectorAll("button")) {
+    item.setAttribute("aria-pressed", String(item === button));
+  }
+  renderGallery();
+}
+
+function handleUploadType(event) {
+  const button = event.target.closest("button[data-upload-type]");
+  if (!button) return;
+  setUploadType(button.dataset.uploadType);
+}
+
+function setUploadType(type) {
+  state.uploadType = type;
+  for (const button of uploadType.querySelectorAll("button")) {
+    button.setAttribute("aria-pressed", String(button.dataset.uploadType === type));
+  }
+  for (const group of document.querySelectorAll("[data-file-group]")) {
+    group.hidden = group.dataset.fileGroup !== type;
+  }
+}
+
+async function handleUpload(event) {
+  event.preventDefault();
+  uploadButton.disabled = true;
+  uploadButton.textContent = "处理中";
+  try {
+    const payload = await buildUploadPayload(new FormData(uploadForm), state.uploadType);
+    const totalBytes = Array.from(payload.values())
+      .filter((value) => value instanceof File)
+      .reduce((sum, file) => sum + file.size, 0);
+    if (totalBytes > MAX_CLIENT_UPLOAD_BYTES) {
+      throw new Error("这次上传超过 95MB，请拆成更小的文件或先压缩视频。");
+    }
+    await api("/api/upload", { method: "POST", body: payload });
+    uploadForm.reset();
+    setUploadType("photo");
+    await refreshMedia();
+    showToast("上传完成");
+  } catch (error) {
+    showToast(error.message || "上传失败");
+  } finally {
+    uploadButton.disabled = false;
+    uploadButton.textContent = "上传";
+  }
+}
+
+async function buildUploadPayload(form, type) {
+  const payload = new FormData();
+  payload.set("type", type);
+  payload.set("title", stringField(form, "title"));
+  payload.set("caption", stringField(form, "caption"));
+  payload.set("taken_at", stringField(form, "taken_at"));
+  payload.set("people", normalizeList(stringField(form, "people")).join(","));
+  payload.set("tags", normalizeList(stringField(form, "tags")).join(","));
+
+  if (type === "photo") {
+    const original = requiredFile(form, "photo_original", "请选择原始照片");
+    const posterSource = optionalFile(form, "photo_poster") || original;
+    const poster = await resizeImage(posterSource, IMAGE_POSTER_EDGE, "poster");
+    const large = await resizeImage(original, IMAGE_LARGE_EDGE, "large").catch(() =>
+      resizeImage(posterSource, IMAGE_LARGE_EDGE, "large"),
+    );
+    payload.set("original", original, original.name);
+    payload.set("large", large, large.name);
+    payload.set("poster", poster, poster.name);
+  }
+
+  if (type === "live") {
+    const still = requiredFile(form, "live_still", "请选择实况静态原件");
+    const motion = requiredFile(form, "live_motion", "请选择实况动态原件");
+    const posterSource = optionalFile(form, "live_poster") || still;
+    const poster = await resizeImage(posterSource, IMAGE_POSTER_EDGE, "live-poster");
+    payload.set("original_still", still, still.name);
+    payload.set("original_motion", motion, motion.name);
+    payload.set("poster", poster, poster.name);
+    payload.set("motion", motion, motion.name);
+    const duration = await readVideoDuration(motion).catch(() => 0);
+    if (duration) payload.set("duration", String(Math.round(duration)));
+  }
+
+  if (type === "video") {
+    const original = requiredFile(form, "video_original", "请选择视频原件");
+    const playback = optionalFile(form, "video_playback") || original;
+    const posterFile = optionalFile(form, "video_poster") || (await captureVideoPoster(playback));
+    const duration = await readVideoDuration(playback).catch(() => 0);
+    payload.set("original_video", original, original.name);
+    payload.set("playback_video", playback, playback.name);
+    payload.set("poster", posterFile, posterFile.name);
+    if (duration) payload.set("duration", String(Math.round(duration)));
+  }
+
+  return payload;
+}
+
+async function refreshMedia() {
+  const response = await api("/api/media");
+  state.media = response.media || [];
+  renderGallery();
+}
+
+function renderGallery() {
+  const items = filteredMedia();
+  renderCounts();
+  galleryGrid.replaceChildren(...items.map(renderMediaCard));
+  emptyState.hidden = items.length > 0;
+}
+
+function renderCounts() {
+  document.querySelector("#count-all").textContent = state.media.length;
+  document.querySelector("#count-live").textContent = state.media.filter((item) => item.type === "live").length;
+  document.querySelector("#count-video").textContent = state.media.filter((item) => item.type === "video").length;
+}
+
+function filteredMedia() {
+  return state.media.filter((item) => {
+    if (state.filterType !== "all" && item.type !== state.filterType) return false;
+    if (!state.search) return true;
+    const haystack = [item.title, item.caption, ...(item.people || []), ...(item.tags || [])]
+      .join(" ")
+      .toLowerCase();
+    return haystack.includes(state.search);
+  });
+}
+
+function renderMediaCard(item) {
+  const card = document.createElement("article");
+  card.className = "media-card";
+  card.dataset.type = item.type;
+
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "media-open";
+  button.setAttribute("aria-label", `打开 ${item.title}`);
+  button.addEventListener("click", () => openMedia(item));
+
+  const poster = document.createElement("img");
+  poster.loading = "lazy";
+  poster.decoding = "async";
+  poster.src = mediaUrl(item.id, "poster");
+  poster.alt = item.title || "相册媒体";
+  button.append(poster);
+
+  if (item.type === "live") {
+    const liveVideo = document.createElement("video");
+    liveVideo.src = mediaUrl(item.id, "motion");
+    liveVideo.muted = true;
+    liveVideo.loop = true;
+    liveVideo.playsInline = true;
+    liveVideo.preload = "none";
+    liveVideo.className = "live-preview";
+    button.append(liveVideo);
+    button.addEventListener("pointerenter", () => playPreview(liveVideo));
+    button.addEventListener("pointerleave", () => pausePreview(liveVideo));
+    button.addEventListener("pointerdown", () => playPreview(liveVideo));
+    button.addEventListener("pointerup", () => pausePreview(liveVideo));
+    button.addEventListener("pointercancel", () => pausePreview(liveVideo));
+  }
+
+  const badge = document.createElement("span");
+  badge.className = "type-badge";
+  badge.textContent = typeLabel(item.type);
+  button.append(badge);
+
+  if (item.type === "video") {
+    const play = document.createElement("span");
+    play.className = "play-badge";
+    play.textContent = "播放";
+    button.append(play);
+  }
+
+  const copy = document.createElement("div");
+  copy.className = "media-copy";
+  copy.innerHTML = `
+    <h3>${escapeHtml(item.title || "未命名")}</h3>
+    <p>${escapeHtml(item.caption || formatDate(item.taken_at) || "没有说明")}</p>
+    <div class="tag-row">
+      ${(item.people || []).map((person) => `<span>${escapeHtml(person)}</span>`).join("")}
+      ${(item.tags || []).slice(0, 3).map((tag) => `<span>${escapeHtml(tag)}</span>`).join("")}
+    </div>
+  `;
+
+  card.append(button, copy);
+  return card;
+}
+
+function openMedia(item) {
+  state.activeMedia = item;
+  dialogMedia.replaceChildren();
+  dialogType.textContent = typeLabel(item.type);
+  dialogTitle.textContent = item.title || "未命名";
+  dialogCaption.textContent = item.caption || formatDate(item.taken_at) || "";
+  dialogTags.replaceChildren(
+    ...(item.people || []).map(makeTag),
+    ...(item.tags || []).map(makeTag),
+  );
+
+  if (item.type === "video") {
+    const video = document.createElement("video");
+    video.src = mediaUrl(item.id, "playback_video");
+    video.poster = mediaUrl(item.id, "poster");
+    video.controls = true;
+    video.playsInline = true;
+    dialogMedia.append(video);
+    downloadLink.href = mediaUrl(item.id, "original_video", true);
+  } else if (item.type === "live") {
+    const wrap = document.createElement("button");
+    wrap.className = "live-detail";
+    wrap.type = "button";
+    wrap.setAttribute("aria-label", "按住播放实况照片");
+    const image = document.createElement("img");
+    image.src = mediaUrl(item.id, "poster");
+    image.alt = item.title || "实况照片";
+    const video = document.createElement("video");
+    video.src = mediaUrl(item.id, "motion");
+    video.muted = true;
+    video.loop = true;
+    video.playsInline = true;
+    video.preload = "metadata";
+    wrap.append(image, video);
+    wrap.addEventListener("pointerenter", () => playPreview(video));
+    wrap.addEventListener("pointerleave", () => pausePreview(video));
+    wrap.addEventListener("pointerdown", () => playPreview(video));
+    wrap.addEventListener("pointerup", () => pausePreview(video));
+    dialogMedia.append(wrap);
+    downloadLink.href = mediaUrl(item.id, "original_still", true);
+  } else {
+    const image = document.createElement("img");
+    image.src = mediaUrl(item.id, "large");
+    image.alt = item.title || "照片";
+    dialogMedia.append(image);
+    downloadLink.href = mediaUrl(item.id, "original", true);
+  }
+
+  mediaDialog.showModal();
+}
+
+async function handleDelete() {
+  if (!state.activeMedia) return;
+  const confirmed = window.confirm(`确定删除「${state.activeMedia.title || "这条媒体"}」吗？`);
+  if (!confirmed) return;
+  try {
+    await api(`/api/media/${state.activeMedia.id}`, { method: "DELETE" });
+    mediaDialog.close();
+    await refreshMedia();
+    showToast("已删除");
+  } catch (error) {
+    showToast(error.message || "删除失败");
+  }
+}
+
+function showAuth() {
+  authView.hidden = false;
+  albumView.hidden = true;
+}
+
+function showAlbum() {
+  authView.hidden = true;
+  albumView.hidden = false;
+}
+
+async function api(path, options = {}) {
+  const response = await fetch(path, {
+    credentials: "same-origin",
+    ...options,
+  });
+  const contentType = response.headers.get("content-type") || "";
+  const data = contentType.includes("application/json") ? await response.json() : null;
+  if (!response.ok) {
+    throw new Error(data?.error || `请求失败：${response.status}`);
+  }
+  return data;
+}
+
+async function resizeImage(file, maxEdge, suffix) {
+  try {
+    const bitmap = await createImageBitmap(file);
+    const ratio = Math.min(1, maxEdge / Math.max(bitmap.width, bitmap.height));
+    const width = Math.max(1, Math.round(bitmap.width * ratio));
+    const height = Math.max(1, Math.round(bitmap.height * ratio));
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const context = canvas.getContext("2d");
+    context.drawImage(bitmap, 0, 0, width, height);
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/webp", 0.86));
+    if (!blob) throw new Error("无法生成网页图片");
+    return new File([blob], `${stripExtension(file.name)}-${suffix}.webp`, { type: "image/webp" });
+  } catch {
+    throw new Error("浏览器无法读取这张图片来生成网页版本，请额外提供 JPG/PNG/WebP 封面。");
+  }
+}
+
+async function captureVideoPoster(file) {
+  const video = document.createElement("video");
+  video.muted = true;
+  video.playsInline = true;
+  video.preload = "metadata";
+  video.src = URL.createObjectURL(file);
+  try {
+    await once(video, "loadedmetadata");
+    video.currentTime = Math.min(1, Math.max(0, video.duration / 10 || 0));
+    await once(video, "seeked");
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth || 1280;
+    canvas.height = video.videoHeight || 720;
+    canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/webp", 0.82));
+    if (!blob) throw new Error("无法生成视频封面");
+    return new File([blob], `${stripExtension(file.name)}-poster.webp`, { type: "image/webp" });
+  } finally {
+    URL.revokeObjectURL(video.src);
+  }
+}
+
+async function readVideoDuration(file) {
+  const video = document.createElement("video");
+  video.preload = "metadata";
+  video.src = URL.createObjectURL(file);
+  try {
+    await once(video, "loadedmetadata");
+    return video.duration || 0;
+  } finally {
+    URL.revokeObjectURL(video.src);
+  }
+}
+
+function once(target, eventName) {
+  return new Promise((resolve, reject) => {
+    const timeout = window.setTimeout(() => reject(new Error("媒体读取超时")), 8000);
+    target.addEventListener(
+      eventName,
+      () => {
+        window.clearTimeout(timeout);
+        resolve();
+      },
+      { once: true },
+    );
+    target.addEventListener(
+      "error",
+      () => {
+        window.clearTimeout(timeout);
+        reject(new Error("无法读取媒体文件"));
+      },
+      { once: true },
+    );
+  });
+}
+
+function playPreview(video) {
+  video.dataset.playing = "true";
+  video.play().catch(() => {});
+}
+
+function pausePreview(video) {
+  video.dataset.playing = "false";
+  video.pause();
+  video.currentTime = 0;
+}
+
+function requiredFile(form, name, message) {
+  const file = optionalFile(form, name);
+  if (!file) throw new Error(message);
+  return file;
+}
+
+function optionalFile(form, name) {
+  const file = form.get(name);
+  return file instanceof File && file.size > 0 ? file : null;
+}
+
+function stringField(form, name) {
+  return String(form.get(name) || "").trim();
+}
+
+function normalizeList(value) {
+  return value
+    .split(/[,，]/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function mediaUrl(id, variant, download = false) {
+  return `/api/media/${encodeURIComponent(id)}/${encodeURIComponent(variant)}${download ? "?download=1" : ""}`;
+}
+
+function typeLabel(type) {
+  return { photo: "照片", live: "实况", video: "视频" }[type] || type;
+}
+
+function formatDate(value) {
+  if (!value) return "";
+  return new Intl.DateTimeFormat("zh-CN", { dateStyle: "medium" }).format(new Date(value));
+}
+
+function makeTag(value) {
+  const tag = document.createElement("span");
+  tag.textContent = value;
+  return tag;
+}
+
+function stripExtension(name) {
+  return name.replace(/\.[^.]+$/, "") || "media";
 }
 
 function showToast(message) {
@@ -256,95 +508,7 @@ function showToast(message) {
   window.clearTimeout(showToast.timer);
   showToast.timer = window.setTimeout(() => {
     toast.dataset.visible = "false";
-  }, 2200);
-}
-
-function resizeCanvas() {
-  deviceScale = Math.min(window.devicePixelRatio || 1, 2);
-  width = window.innerWidth;
-  height = window.innerHeight;
-  canvas.width = Math.floor(width * deviceScale);
-  canvas.height = Math.floor(height * deviceScale);
-  canvas.style.width = `${width}px`;
-  canvas.style.height = `${height}px`;
-  context.setTransform(deviceScale, 0, 0, deviceScale, 0, 0);
-  buildAmbient();
-}
-
-function buildAmbient() {
-  const moteCount = Math.max(42, Math.floor(width / 26));
-  motes = Array.from({ length: moteCount }, () => ({
-    x: Math.random() * width,
-    y: Math.random() * height,
-    radius: 0.7 + Math.random() * 1.8,
-    speed: 0.08 + Math.random() * 0.26,
-    alpha: 0.18 + Math.random() * 0.28,
-  }));
-
-  ribbons = Array.from({ length: 3 }, (_, index) => ({
-    offset: Math.random() * Math.PI * 2,
-    y: height * (0.24 + index * 0.18),
-    alpha: 0.08 + index * 0.02,
-  }));
-}
-
-function draw(now = 0) {
-  const delta = Math.min(32, now - lastFrame || 16);
-  lastFrame = now;
-  context.clearRect(0, 0, width, height);
-  drawBackdrop(now);
-  if (motionEnabled) {
-    drawRibbons(now);
-    drawMotes(delta);
-  }
-  requestAnimationFrame(draw);
-}
-
-function drawBackdrop(now) {
-  const gradient = context.createLinearGradient(0, 0, width, height);
-  gradient.addColorStop(0, "rgba(97, 164, 143, 0.08)");
-  gradient.addColorStop(0.45, "rgba(196, 164, 103, 0.035)");
-  gradient.addColorStop(1, "rgba(143, 63, 77, 0.08)");
-  context.fillStyle = gradient;
-  context.fillRect(0, 0, width, height);
-
-  const pulse = 0.5 + Math.sin(now * 0.0004) * 0.5;
-  context.fillStyle = `rgba(246, 241, 232, ${0.018 + pulse * 0.012})`;
-  context.fillRect(0, height * 0.18, width, 1);
-  context.fillRect(0, height * 0.72, width, 1);
-}
-
-function drawRibbons(now) {
-  ribbons.forEach((ribbon, ribbonIndex) => {
-    context.beginPath();
-    for (let x = -20; x <= width + 20; x += 24) {
-      const y =
-        ribbon.y +
-        Math.sin(x * 0.008 + now * 0.00035 + ribbon.offset) * (22 + ribbonIndex * 12);
-      if (x === -20) context.moveTo(x, y);
-      else context.lineTo(x, y);
-    }
-    context.strokeStyle =
-      ribbonIndex === 1
-        ? `rgba(97, 164, 143, ${ribbon.alpha})`
-        : `rgba(196, 164, 103, ${ribbon.alpha})`;
-    context.lineWidth = 1.2;
-    context.stroke();
-  });
-}
-
-function drawMotes(delta) {
-  motes.forEach((mote) => {
-    mote.y -= mote.speed * delta * 0.06;
-    if (mote.y < -10) {
-      mote.x = Math.random() * width;
-      mote.y = height + Math.random() * 80;
-    }
-    context.beginPath();
-    context.arc(mote.x, mote.y, mote.radius, 0, Math.PI * 2);
-    context.fillStyle = `rgba(246, 241, 232, ${mote.alpha})`;
-    context.fill();
-  });
+  }, 2600);
 }
 
 function escapeHtml(value) {
@@ -359,22 +523,3 @@ function escapeHtml(value) {
     return entities[char];
   });
 }
-
-motionToggle.addEventListener("click", () => {
-  motionEnabled = !motionEnabled;
-  motionToggle.setAttribute("aria-pressed", String(motionEnabled));
-  showToast(motionEnabled ? "背景动效已开启" : "背景动效已关闭");
-});
-
-document.querySelector("#copy-site").addEventListener("click", () => copyText(SITE_URL, "网站链接"));
-document.querySelector("#copy-repo").addEventListener("click", () => copyText(REPO_URL, "仓库链接"));
-
-window.addEventListener("resize", resizeCanvas);
-
-renderCrew();
-renderMemberPanel();
-renderMemories();
-updateClock();
-window.setInterval(updateClock, 30_000);
-resizeCanvas();
-requestAnimationFrame(draw);
