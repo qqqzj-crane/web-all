@@ -299,14 +299,17 @@ textarea:focus {
 }
 
 .brand-mark {
+  position: relative;
   display: grid;
   width: 38px;
   height: 38px;
   place-items: center;
   border-radius: 8px;
-  background: linear-gradient(135deg, var(--rose), var(--amber) 46%, var(--teal));
+  overflow: hidden;
+  background: url("assets/album-brand-icon.png") center / cover no-repeat;
   color: #fff;
   font-weight: 950;
+  box-shadow: 0 10px 24px rgba(255, 111, 145, 0.18);
 }
 
 .brand strong,
