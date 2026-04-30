@@ -9,4 +9,4 @@ bucket_name = "qqqzj-album-media"
 [[d1_databases]]
 binding = "ALBUM_DB"
 database_name = "qqqzj-album-db"
-database_id = "replace-with-your-d1-database-id"
+database_id = "6d92d1b6-6e6e-4d87-8424-f92124141704"

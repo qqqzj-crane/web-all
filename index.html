@@ -41,57 +41,48 @@
             </span>
           </a>
           <nav class="nav-links" aria-label="相册导航">
-            <a href="#gallery">照片墙</a>
-            <a href="#upload">上传</a>
-            <a href="#manage">管理</a>
+            <button class="nav-link" id="gallery-nav" type="button" aria-pressed="true">照片墙</button>
+            <button class="nav-link" id="upload-nav" type="button" aria-pressed="false">上传</button>
           </nav>
           <button class="ghost-button" id="logout-button" type="button">退出</button>
         </header>
 
-        <section class="hero" id="gallery" aria-labelledby="gallery-title">
-          <div>
-            <p class="eyebrow">private media wall</p>
-            <h2 id="gallery-title">照片、实况和短视频</h2>
-            <p>
-              这里默认只加载封面图。实况照片在桌面悬停、手机按住时播放；视频点开详情后播放网页版本。
-            </p>
-          </div>
-          <div class="hero-stats" aria-label="相册统计">
+        <section class="gallery-page" id="gallery-page">
+          <section class="hero" id="gallery" aria-labelledby="gallery-title">
             <div>
-              <span id="count-all">0</span>
-              <small>全部</small>
+              <p class="eyebrow">private media wall</p>
+              <h2 id="gallery-title">照片、实况和短视频</h2>
+              <p>
+                这里默认只加载封面图。实况照片在桌面悬停、手机按住时播放；视频点开详情后播放网页版本。
+              </p>
             </div>
-            <div>
-              <span id="count-live">0</span>
-              <small>实况</small>
+            <div class="hero-actions">
+              <button class="primary-button" id="open-upload-button" type="button">上传媒体</button>
             </div>
-            <div>
-              <span id="count-video">0</span>
-              <small>视频</small>
+          </section>
+
+          <section class="toolbar" aria-label="筛选媒体">
+            <div class="segmented-control" id="type-filter" role="group" aria-label="媒体类型">
+              <button type="button" data-type="all" aria-pressed="true">全部</button>
+              <button type="button" data-type="photo">照片</button>
+              <button type="button" data-type="live">实况</button>
+              <button type="button" data-type="video">视频</button>
             </div>
-          </div>
+            <label class="search-field">
+              <span>搜索</span>
+              <input id="search-input" type="search" placeholder="标题、人物、标签" />
+            </label>
+          </section>
+
+          <section class="gallery-grid" id="gallery-grid" aria-live="polite"></section>
+          <p class="empty-state" id="empty-state" hidden>还没有媒体。先去上传几张照片吧。</p>
         </section>
 
-        <section class="toolbar" aria-label="筛选媒体">
-          <div class="segmented-control" id="type-filter" role="group" aria-label="媒体类型">
-            <button type="button" data-type="all" aria-pressed="true">全部</button>
-            <button type="button" data-type="photo">照片</button>
-            <button type="button" data-type="live">实况</button>
-            <button type="button" data-type="video">视频</button>
-          </div>
-          <label class="search-field">
-            <span>搜索</span>
-            <input id="search-input" type="search" placeholder="标题、人物、标签" />
-          </label>
-        </section>
-
-        <section class="gallery-grid" id="gallery-grid" aria-live="polite"></section>
-        <p class="empty-state" id="empty-state" hidden>还没有媒体。先去上传几张照片吧。</p>
-
-        <section class="upload-section" id="upload" aria-labelledby="upload-title">
+        <section class="upload-page" id="upload-page" hidden>
           <div class="section-heading">
             <p class="eyebrow">upload</p>
             <h2 id="upload-title">上传媒体</h2>
+            <button class="ghost-button" id="back-gallery-button" type="button">返回照片墙</button>
           </div>
 
           <form class="upload-form" id="upload-form">
@@ -107,15 +98,11 @@
             <div class="form-grid">
               <label>
                 标题
-                <input name="title" type="text" placeholder="例如：春游合照" required />
+                <input name="title" type="text" placeholder="留空时使用文件名；批量时会自动编号" />
               </label>
               <label>
                 拍摄日期
                 <input name="taken_at" type="date" />
-              </label>
-              <label>
-                人物
-                <input name="people" type="text" placeholder="用逗号分隔：qqqzj, l_l" />
               </label>
               <label>
                 标签
@@ -132,64 +119,55 @@
               <div class="file-group" data-file-group="photo">
                 <label>
                   原始照片
-                  <input name="photo_original" type="file" accept="image/*,.heic,.heif" />
+                  <input name="photo_original" type="file" accept="image/*,.heic,.heif" multiple />
                 </label>
                 <label>
                   网页封面（可选）
-                  <input name="photo_poster" type="file" accept="image/*" />
+                  <input name="photo_poster" type="file" accept="image/*" multiple />
                 </label>
               </div>
 
               <div class="file-group" data-file-group="live" hidden>
                 <label>
                   实况静态原件
-                  <input name="live_still" type="file" accept="image/*,.heic,.heif" />
+                  <input name="live_still" type="file" accept="image/*,.heic,.heif" multiple />
                 </label>
                 <label>
                   实况动态原件
-                  <input name="live_motion" type="file" accept="video/*,.mov,.mp4" />
+                  <input name="live_motion" type="file" accept="video/*,.mov,.mp4" multiple />
                 </label>
                 <label>
                   网页封面（可选）
-                  <input name="live_poster" type="file" accept="image/*" />
+                  <input name="live_poster" type="file" accept="image/*" multiple />
                 </label>
               </div>
 
               <div class="file-group" data-file-group="video" hidden>
                 <label>
                   视频原件
-                  <input name="video_original" type="file" accept="video/*,.mov,.mp4,.m4v" />
+                  <input name="video_original" type="file" accept="video/*,.mov,.mp4,.m4v" multiple />
                 </label>
                 <label>
                   网页播放版 MP4（可选）
-                  <input name="video_playback" type="file" accept="video/mp4,.mp4" />
+                  <input name="video_playback" type="file" accept="video/mp4,.mp4" multiple />
                 </label>
                 <label>
                   视频封面（可选）
-                  <input name="video_poster" type="file" accept="image/*" />
+                  <input name="video_poster" type="file" accept="image/*" multiple />
                 </label>
               </div>
             </div>
 
             <p class="form-note">
-              单次请求建议控制在 95MB 以内。视频 v1 适合少量短视频；较大的视频以后可升级为直传或 Stream。
+              可以多选文件批量上传。每个媒体会单独请求，单个媒体建议控制在 95MB 以内。
             </p>
+            <p class="upload-progress" id="upload-progress" role="status" aria-live="polite"></p>
 
             <div class="form-actions">
               <button class="primary-button" id="upload-button" type="submit">上传</button>
               <button class="ghost-button" type="reset">清空</button>
             </div>
           </form>
-        </section>
-
-        <section class="manage-section" id="manage" aria-labelledby="manage-title">
-          <div class="section-heading">
-            <p class="eyebrow">manage</p>
-            <h2 id="manage-title">管理说明</h2>
-          </div>
-          <p>
-            当前版本支持在详情页删除媒体。修改标题、人物和标签的接口已经预留，可在下一步加成行内编辑。
-          </p>
         </section>
       </section>
     </main>

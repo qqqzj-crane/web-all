@@ -114,8 +114,7 @@ p {
 .auth-copy,
 .hero p,
 .media-copy p,
-.form-note,
-.manage-section p {
+.form-note {
   color: var(--muted);
 }
 
@@ -279,16 +278,25 @@ textarea:focus {
   gap: clamp(8px, 2vw, 22px);
 }
 
-.nav-links a {
+.nav-link {
+  border: 0;
+  padding: 8px 0;
+  background: transparent;
   color: var(--muted);
   font-size: 14px;
   font-weight: 900;
-  text-decoration: none;
+}
+
+.nav-link:hover,
+.nav-link:focus-visible,
+.nav-link[aria-pressed="true"] {
+  color: var(--ink);
+  outline: 0;
 }
 
 .hero {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(260px, 380px);
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: clamp(24px, 5vw, 70px);
   align-items: end;
   padding: clamp(42px, 7vw, 82px) 0 28px;
@@ -301,29 +309,9 @@ textarea:focus {
   line-height: 1.02;
 }
 
-.hero-stats {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.hero-stats div {
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 16px;
-  background: var(--surface);
-  box-shadow: 0 16px 48px rgba(35, 52, 76, 0.08);
-}
-
-.hero-stats span {
-  display: block;
-  font-size: 34px;
-  font-weight: 950;
-}
-
-.hero-stats small {
-  color: var(--muted);
-  font-weight: 900;
+.hero-actions {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .toolbar {
@@ -483,13 +471,22 @@ textarea:focus {
   text-align: center;
 }
 
-.upload-section,
-.manage-section {
-  padding: clamp(54px, 8vw, 92px) 0;
+.upload-page {
+  padding: clamp(42px, 7vw, 82px) 0;
 }
 
 .section-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 14px;
   margin-bottom: 22px;
+}
+
+.section-heading .eyebrow {
+  flex-basis: 100%;
+  margin-bottom: 0;
 }
 
 .upload-form {
@@ -522,6 +519,14 @@ textarea:focus {
   margin-bottom: 0;
   font-size: 13px;
   font-weight: 800;
+}
+
+.upload-progress {
+  min-height: 22px;
+  margin: 0;
+  color: var(--blue);
+  font-size: 13px;
+  font-weight: 900;
 }
 
 .media-dialog {
@@ -649,8 +654,8 @@ textarea:focus {
     grid-template-columns: 1fr;
   }
 
-  .hero-stats {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+  .hero-actions {
+    justify-content: flex-start;
   }
 
   .gallery-grid {
@@ -666,14 +671,6 @@ textarea:focus {
 @media (max-width: 520px) {
   .brand small {
     display: none;
-  }
-
-  .hero-stats div {
-    padding: 12px;
-  }
-
-  .hero-stats span {
-    font-size: 26px;
   }
 
   .password-row,

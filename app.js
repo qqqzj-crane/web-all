@@ -14,6 +14,12 @@ const authView = document.querySelector("#auth-view");
 const albumView = document.querySelector("#album-view");
 const loginForm = document.querySelector("#login-form");
 const logoutButton = document.querySelector("#logout-button");
+const galleryPage = document.querySelector("#gallery-page");
+const uploadPage = document.querySelector("#upload-page");
+const galleryNav = document.querySelector("#gallery-nav");
+const uploadNav = document.querySelector("#upload-nav");
+const openUploadButton = document.querySelector("#open-upload-button");
+const backGalleryButton = document.querySelector("#back-gallery-button");
 const galleryGrid = document.querySelector("#gallery-grid");
 const emptyState = document.querySelector("#empty-state");
 const typeFilter = document.querySelector("#type-filter");
@@ -21,6 +27,7 @@ const searchInput = document.querySelector("#search-input");
 const uploadType = document.querySelector("#upload-type");
 const uploadForm = document.querySelector("#upload-form");
 const uploadButton = document.querySelector("#upload-button");
+const uploadProgress = document.querySelector("#upload-progress");
 const toast = document.querySelector("#toast");
 const mediaDialog = document.querySelector("#media-dialog");
 const dialogClose = document.querySelector("#dialog-close");
@@ -52,6 +59,10 @@ async function init() {
 function bindEvents() {
   loginForm.addEventListener("submit", handleLogin);
   logoutButton.addEventListener("click", handleLogout);
+  galleryNav.addEventListener("click", () => showGalleryPage());
+  uploadNav.addEventListener("click", () => showUploadPage());
+  openUploadButton.addEventListener("click", () => showUploadPage());
+  backGalleryButton.addEventListener("click", () => showGalleryPage());
   typeFilter.addEventListener("click", handleTypeFilter);
   searchInput.addEventListener("input", () => {
     state.search = searchInput.value.trim().toLowerCase();
@@ -122,40 +133,110 @@ function setUploadType(type) {
 async function handleUpload(event) {
   event.preventDefault();
   uploadButton.disabled = true;
-  uploadButton.textContent = "处理中";
+  uploadButton.textContent = "准备中";
+  uploadProgress.textContent = "";
   try {
-    const payload = await buildUploadPayload(new FormData(uploadForm), state.uploadType);
-    const totalBytes = Array.from(payload.values())
-      .filter((value) => value instanceof File)
-      .reduce((sum, file) => sum + file.size, 0);
-    if (totalBytes > MAX_CLIENT_UPLOAD_BYTES) {
-      throw new Error("这次上传超过 95MB，请拆成更小的文件或先压缩视频。");
+    const form = new FormData(uploadForm);
+    const jobs = buildUploadJobs(form, state.uploadType);
+    for (let index = 0; index < jobs.length; index += 1) {
+      const job = jobs[index];
+      uploadButton.textContent = `上传中 ${index + 1}/${jobs.length}`;
+      uploadProgress.textContent = `正在处理 ${index + 1}/${jobs.length}: ${job.displayName}`;
+      const payload = await buildUploadPayload(form, state.uploadType, job);
+      const totalBytes = Array.from(payload.values())
+        .filter((value) => value instanceof File)
+        .reduce((sum, file) => sum + file.size, 0);
+      if (totalBytes > MAX_CLIENT_UPLOAD_BYTES) {
+        throw new Error(`${job.displayName} 超过 95MB，请压缩或单独处理。`);
+      }
+      await api("/api/upload", { method: "POST", body: payload });
     }
-    await api("/api/upload", { method: "POST", body: payload });
     uploadForm.reset();
     setUploadType("photo");
     await refreshMedia();
-    showToast("上传完成");
+    showGalleryPage();
+    showToast(`上传完成：${jobs.length} 个`);
   } catch (error) {
     showToast(error.message || "上传失败");
   } finally {
     uploadButton.disabled = false;
     uploadButton.textContent = "上传";
+    uploadProgress.textContent = "";
   }
 }
 
-async function buildUploadPayload(form, type) {
+function buildUploadJobs(form, type) {
+  const title = stringField(form, "title");
+
+  if (type === "photo") {
+    const originals = filesOf(form, "photo_original");
+    const posters = filesOf(form, "photo_poster");
+    if (originals.length === 0) throw new Error("请选择至少一张原始照片");
+    return originals.map((original, index) => ({
+      original,
+      poster: posters[index] || null,
+      title: inferTitle(title, original, originals.length, index),
+      displayName: original.name,
+    }));
+  }
+
+  if (type === "live") {
+    const stills = sortFiles(filesOf(form, "live_still"));
+    const motions = sortFiles(filesOf(form, "live_motion"));
+    const posters = sortFiles(filesOf(form, "live_poster"));
+    if (stills.length === 0 || motions.length === 0) {
+      throw new Error("请选择实况静态原件和动态原件");
+    }
+    if (stills.length !== motions.length) {
+      throw new Error("实况静态原件和动态原件数量需要一致");
+    }
+    if (posters.length > 0 && posters.length !== stills.length) {
+      throw new Error("批量实况封面数量需要和静态原件一致，或者不传封面");
+    }
+    return stills.map((still, index) => ({
+      still,
+      motion: motions[index],
+      poster: posters[index] || null,
+      title: inferTitle(title, still, stills.length, index),
+      displayName: `${still.name} + ${motions[index].name}`,
+    }));
+  }
+
+  if (type === "video") {
+    const originals = filesOf(form, "video_original");
+    const playbacks = filesOf(form, "video_playback");
+    const posters = filesOf(form, "video_poster");
+    if (originals.length === 0) throw new Error("请选择至少一个视频原件");
+    if (playbacks.length > 0 && playbacks.length !== originals.length) {
+      throw new Error("批量视频播放版数量需要和视频原件一致，或者不传播放版");
+    }
+    if (posters.length > 0 && posters.length !== originals.length) {
+      throw new Error("批量视频封面数量需要和视频原件一致，或者不传封面");
+    }
+    return originals.map((original, index) => ({
+      original,
+      playback: playbacks[index] || original,
+      poster: posters[index] || null,
+      title: inferTitle(title, original, originals.length, index),
+      displayName: original.name,
+    }));
+  }
+
+  throw new Error("不支持的上传类型");
+}
+
+async function buildUploadPayload(form, type, job) {
   const payload = new FormData();
   payload.set("type", type);
-  payload.set("title", stringField(form, "title"));
+  payload.set("title", job.title);
   payload.set("caption", stringField(form, "caption"));
   payload.set("taken_at", stringField(form, "taken_at"));
-  payload.set("people", normalizeList(stringField(form, "people")).join(","));
+  payload.set("people", "");
   payload.set("tags", normalizeList(stringField(form, "tags")).join(","));
 
   if (type === "photo") {
-    const original = requiredFile(form, "photo_original", "请选择原始照片");
-    const posterSource = optionalFile(form, "photo_poster") || original;
+    const original = job.original;
+    const posterSource = job.poster || original;
     const poster = await resizeImage(posterSource, IMAGE_POSTER_EDGE, "poster");
     const large = await resizeImage(original, IMAGE_LARGE_EDGE, "large").catch(() =>
       resizeImage(posterSource, IMAGE_LARGE_EDGE, "large"),
@@ -166,9 +247,9 @@ async function buildUploadPayload(form, type) {
   }
 
   if (type === "live") {
-    const still = requiredFile(form, "live_still", "请选择实况静态原件");
-    const motion = requiredFile(form, "live_motion", "请选择实况动态原件");
-    const posterSource = optionalFile(form, "live_poster") || still;
+    const still = job.still;
+    const motion = job.motion;
+    const posterSource = job.poster || still;
     const poster = await resizeImage(posterSource, IMAGE_POSTER_EDGE, "live-poster");
     payload.set("original_still", still, still.name);
     payload.set("original_motion", motion, motion.name);
@@ -179,9 +260,9 @@ async function buildUploadPayload(form, type) {
   }
 
   if (type === "video") {
-    const original = requiredFile(form, "video_original", "请选择视频原件");
-    const playback = optionalFile(form, "video_playback") || original;
-    const posterFile = optionalFile(form, "video_poster") || (await captureVideoPoster(playback));
+    const original = job.original;
+    const playback = job.playback;
+    const posterFile = job.poster || (await captureVideoPoster(playback));
     const duration = await readVideoDuration(playback).catch(() => 0);
     payload.set("original_video", original, original.name);
     payload.set("playback_video", playback, playback.name);
@@ -200,15 +281,8 @@ async function refreshMedia() {
 
 function renderGallery() {
   const items = filteredMedia();
-  renderCounts();
   galleryGrid.replaceChildren(...items.map(renderMediaCard));
   emptyState.hidden = items.length > 0;
-}
-
-function renderCounts() {
-  document.querySelector("#count-all").textContent = state.media.length;
-  document.querySelector("#count-live").textContent = state.media.filter((item) => item.type === "live").length;
-  document.querySelector("#count-video").textContent = state.media.filter((item) => item.type === "video").length;
 }
 
 function filteredMedia() {
@@ -356,6 +430,23 @@ function showAuth() {
 function showAlbum() {
   authView.hidden = true;
   albumView.hidden = false;
+  showGalleryPage();
+}
+
+function showGalleryPage() {
+  galleryPage.hidden = false;
+  uploadPage.hidden = true;
+  galleryNav.setAttribute("aria-pressed", "true");
+  uploadNav.setAttribute("aria-pressed", "false");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function showUploadPage() {
+  galleryPage.hidden = true;
+  uploadPage.hidden = false;
+  galleryNav.setAttribute("aria-pressed", "false");
+  uploadNav.setAttribute("aria-pressed", "true");
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 async function api(path, options = {}) {
@@ -457,15 +548,20 @@ function pausePreview(video) {
   video.currentTime = 0;
 }
 
-function requiredFile(form, name, message) {
-  const file = optionalFile(form, name);
-  if (!file) throw new Error(message);
-  return file;
+function filesOf(form, name) {
+  return form.getAll(name).filter((file) => file instanceof File && file.size > 0);
 }
 
-function optionalFile(form, name) {
-  const file = form.get(name);
-  return file instanceof File && file.size > 0 ? file : null;
+function sortFiles(files) {
+  return [...files].sort((left, right) =>
+    left.name.localeCompare(right.name, "zh-CN", { numeric: true, sensitivity: "base" }),
+  );
+}
+
+function inferTitle(title, file, count, index) {
+  if (title && count === 1) return title;
+  if (title) return `${title} ${index + 1}`;
+  return stripExtension(file.name);
 }
 
 function stringField(form, name) {
